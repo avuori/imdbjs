@@ -85,7 +85,7 @@ var fetchImdbInfos = function (ids, callback) {
                         console.log("Got response: " + res.statusCode);
                         console.log("Caching " + imdbId);
                         try {
-                            redisClient.set(imdbId, data);
+                            redisClient.set(imdbId, data, redis.print);
                         } catch (e) {
                             console.log("Unable to update cache");
                         }
@@ -127,15 +127,18 @@ var renderPage = function (infos, mtimes, callback) {
         }
         page += "<div class='movie'>";
         var regex = {
-            title: /<meta property='og:title' content='([^']+)' \/>/,
+            title: /<meta property="og:title" content="([^"]+)"\/>/,
             description: /<meta name="description" content="([^"]+)" \/>/,
-            image: /<meta property='og:image' content='(http[^']+)'>/
+            image: /<meta property="og:image" content="(http[^"]+)"\/>/
         };
         for (re in regex) {
+            //console.log("find : " + re);
             var m = infos[id].match(regex[re]);
             if (m) {
                 //console.log(re + ": " + m[1]);
                 page += render(id, re, m[1]);
+            } else {
+                //console.log("nope");
             }
         }
         page += "</div>";
@@ -173,7 +176,8 @@ http.createServer(function (request, response) {
                     });
                     res.on("end", function () {
                         try {
-                            redisClient.set(redisKey, data);
+                            console.log("foo");
+                            redisClient.set(redisKey, data, redis.print);
                         } catch (e) {
                             console.log("Unable to update cache.");
                         }
